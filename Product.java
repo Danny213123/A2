@@ -1,5 +1,9 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.List;
+import java.util.*;
 /*
  * class Product defines a product for sale by the system.
  *
@@ -17,10 +21,20 @@ public class Product implements Comparable<Product>
 	private String name;
 	private String id;
 	private Category category;
+
+	private boolean ini = false;
+
 	private double price;
+
 	private int stockCount;
 	private int timesPurchased = 0;
+	private double totalRating = 0;
 
+	private Map<String, List<Customer>> ratings = new TreeMap<String, List<Customer>>();
+	private List<Customer> people = new ArrayList<Customer>();
+
+	private double timesRated = people.size();
+	
 	/** Product Construction
 	 *
 	 * Set id, name, category and stock count.
@@ -69,11 +83,26 @@ public class Product implements Comparable<Product>
 	}
 
 	/*
+	 * Initialize ratings arraylist
+	 */
+	public void initialize (){
+		if (!ini) {
+			ratings.put("1", new ArrayList<Customer>());
+			ratings.put("2", new ArrayList<Customer>());
+			ratings.put("3", new ArrayList<Customer>());
+			ratings.put("4", new ArrayList<Customer>());
+			ratings.put("5", new ArrayList<Customer>());
+
+			ini = true;
+		}
+	}
+
+	/*
 	 * This method will return product category
 	 */
-	public Category getCategory()
+	public String getCategory()
 	{
-		return category;
+		return ""+category;
 	}
 
 	/*
@@ -137,6 +166,110 @@ public class Product implements Comparable<Product>
 		return price;
 	}
 
+	/* 
+	 * Adds rating to product
+	 */
+	public void rate (int rating, Customer customer){
+		people.add(customer);
+
+		List<Customer> temp_people = ratings.get(""+rating);
+		temp_people.add(customer);
+
+		ratings.replace(""+rating, temp_people);
+
+		timesRated = people.size();
+	}
+
+	/*
+	 * Print ratings
+	 */
+	public void printRatings(){
+
+		// Scan through ratings
+		for (int x = 1; x <= 5; x++){
+
+			if (ratings.get(""+x).size() == 0){
+				System.out.println(x + ": " + "none");
+
+			} else {
+
+				System.out.print(x);
+
+				for (Customer cust : ratings.get(""+x)){
+					System.out.print(": " + cust.getName());
+				}
+
+				System.out.println(", (" + ratings.get(""+x).size() + ")");
+				
+			}
+		}
+	}
+
+	/*
+	 * remove rating
+	 */
+	public void removeRating(int rating, Customer customer){
+		List<Customer> custs = ratings.get(""+rating);
+		custs.remove(customer);
+
+		ratings.replace(""+rating, custs);
+
+		people.remove(customer);
+	}
+
+	/*
+	 * add rating to total ratings
+	 */
+	public void addRating (int rating){
+		totalRating += rating;
+	}
+
+	/*
+	 * decrease total rating by rating
+	 */
+	public void decreaseRating (int rating){
+		totalRating -= rating;
+	}
+
+	/*
+	 * return average rating
+	 */
+	public double returnRating (){
+		if (timesRated == 0){
+			return 0;
+		} else {
+			return totalRating / timesRated;
+		}
+	}
+
+	/*
+	 * check if customer has already rated this product
+	 */
+	public boolean checkRating (Customer customer){
+		for (Customer cust: people){
+			if (cust.equals(customer)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/*
+	 * check past rating
+	 */
+	public int checkPastRating (Customer customer){
+		for (int x = 1; x <= 5; x++){
+			if (ratings.get(""+x) != null) {
+				for (Customer cust : ratings.get("" + x)){
+					if (cust.equals(customer)){
+						return x;
+					}
+				}
+			}
+		}
+		return 1;
+	}
+	
 	/*
 	 * This method will return product option
 	 */
@@ -197,7 +330,7 @@ public class Product implements Comparable<Product>
 
 	public void print()
 	{
-		System.out.printf("\nId: %-5s Category: %-9s Name: %-20s Price: %7.1f", id, category, name, price);
+		System.out.printf("\nId: %-5s Category: %-9s Name: %-20s Price: %7.1f Rating: %7.1f", id, category, name, price, returnRating());
 	}
 
 	/*

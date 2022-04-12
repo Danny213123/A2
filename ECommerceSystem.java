@@ -1,11 +1,13 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Scanner;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Map;
 import java.util.TreeMap;
 import java.io.*;
+import java.util.StringTokenizer;
 
 /*
  * Models a simple ECommerce system. Keeps track of products for sale, registered customers, product orders and
@@ -545,23 +547,37 @@ public class ECommerceSystem
 
     }
 
+    /*
+     * Adds item to customer cart
+     * @param String productId
+     * @param String customerId
+     * @param String productOptions
+     */
     public void addToCart(String productId, String customerId, String productOptions){
+
+        // Check if customer exists
         int index = customers.indexOf(new Customer(customerId));
         if (index == -1){
             throw new UnknownProductException(Integer.parseInt(productId));
         }
         Customer customer = customers.get(index);
 
+        // Checks to see if product exists
         if (Integer.parseInt(productId) > this.productId || Integer.parseInt(productId) < 700){
             throw new UnknownProductException(Integer.parseInt(productId));
         }
         Product product = products.get(productId);
 
-
         customer.addItem(product, productOptions);
     }
 
+    /*
+     * Prints customer cart
+     * @param String customerId
+     */
     public void printCart(String customerId){
+
+        // Check to see if customer exists
         int index = customers.indexOf(new Customer(customerId));
         if (index == -1){
             throw new UnknownCustomerException(Integer.parseInt(customerId));
@@ -570,8 +586,14 @@ public class ECommerceSystem
 
         customer.printCart();
     }
-    
+
+    /*
+     * Order items from customer cart
+     * @param String customerId
+     */
     public void orderItems(String customerId){
+
+        // Checks to see if customer exists
         int index = customers.indexOf(new Customer(customerId));
         if (index == -1){
             throw new UnknownCustomerException(Integer.parseInt(customerId));
@@ -581,17 +603,26 @@ public class ECommerceSystem
         ArrayList<CartItem> shoppingCart = customer.getCart();
         ArrayList<CartItem> orderedCart = new ArrayList<CartItem>();
 
+        // orders the product, adds ordered items into ordered cart
         for (CartItem items: shoppingCart){
             orderProduct(items.getItem().getId(),customerId,items.getProductOptions());
             orderedCart.add(items);
         }
 
+        // Removes items from customer cart
         for (CartItem ordered: orderedCart){
             customer.removeItem(ordered);
         }
     }
 
+    /*
+     * Removes item from customer cart
+     * @param String productId
+     * @param String customerId
+     */
     public void removeItemCommand(String customerId, String productId){
+
+        // Checks to see if customer exists
         int index = customers.indexOf(new Customer(customerId));
         if (index == -1){
             throw new UnknownCustomerException(Integer.parseInt(customerId));
@@ -602,6 +633,7 @@ public class ECommerceSystem
 
         int length = shoppingCart.size();
 
+        // Removes product if equals product id
         for (CartItem items : shoppingCart){
             if (items.getItem().getId().equals(productId)){
                 customer.removeItem(items);
@@ -609,19 +641,25 @@ public class ECommerceSystem
             }
         }
 
+        // If length stays the same, product doesn't exist in cart
         if (length == customer.getCart().size()) {
             throw new UnknownProductException("Product id " + productId + " not in shopping cart.");
         }
     }
 
+    /*
+     * Checks order statistics of products
+     */
     public void statistics(){
 
         ArrayList<Product> tempProducts = new ArrayList<Product>();
 
+        // Adds products to array list tempProducts
         for (int x = 700; x < this.productId; x++){
             tempProducts.add(products.get(""+x));
         }
 
+        // Sort arraylist
         Collections.sort(tempProducts, new Comparator<Product>(){
 
             @Override
@@ -640,6 +678,129 @@ public class ECommerceSystem
         }
     }
 
+    /*
+     * Print list of products of category with higher than given rating
+     * @param String Category
+     * @param int Rating
+     */
+    public void sortByRating(String Category, int rating){
+        ArrayList<Product> tempProducts = new ArrayList<Product>();
+        ArrayList<Product> categoryProds = new ArrayList<Product>();
+
+        // Move products from map to array list tempProducts
+        for (int x = 700; x < this.productId; x++){
+            tempProducts.add(products.get(""+x));
+        }
+
+        if (rating < 1 || rating > 5){
+            throw new InvalidRatingException(rating);
+        }
+
+        // Create a new arraylist for products with the same category
+        for (Product prods : tempProducts){
+            if (prods.getCategory().equalsIgnoreCase(Category)){
+                if (prods.returnRating() > rating) {
+                    categoryProds.add(prods);
+                }
+            }
+        }
+
+        if (categoryProds.size() == 0){
+            throw new CategoryNameInvalid(Category);
+        }
+
+        // Sort arraylist by ratings
+        Collections.sort(categoryProds, new Comparator<Product>(){
+
+            @Override
+            public int compare(Product A, Product B){
+                if (A.returnRating() > B.returnRating())
+                    return -1;
+                if (A.returnRating() < B.returnRating())
+                    return 1;
+                return 0;
+            }
+
+        });
+
+        for (Product prods : categoryProds){prods.print();}
+    }
+
+    public void rate(String customerId, String productId, int rating){
+
+        // Check to see if customer exists
+        int index = customers.indexOf(new Customer(customerId));
+        if (index == -1)
+        {
+            throw new UnknownCustomerException(Integer.parseInt(customerId));
+        }
+        Customer customer = customers.get(index);
+
+        // Get product
+        if (Integer.parseInt(productId) >= this.productId || Integer.parseInt(productId) <= 699){
+            throw new UnknownProductException(Integer.parseInt(productId));
+        }
+
+        Product product = products.get(productId);
+
+        // Initialize product ratings arraylist
+        product.initialize();
+
+        if (rating < 1 || rating > 5){
+            throw new InvalidRatingException(rating);
+        }
+
+        // Check if customer has already put a rating on a product
+        if (product.checkRating(customer)){
+            System.out.println ("Customer " + customerId + " has already voted, current rating of: " + rating + " has replaced the last rating of " + product.checkPastRating(customer));
+            product.decreaseRating(product.checkPastRating(customer));
+            product.removeRating(product.checkPastRating(customer), customer);
+            product.rate(rating, customer);
+            product.addRating(rating);
+
+        } else {
+            product.addRating(rating);
+            product.rate(rating, customer);
+
+            System.out.println("Rating added.");
+        }
+    }
+
+    public void removeRating (String customerId, String productId){
+
+        // Check to see if customer exists
+        int index = customers.indexOf(new Customer(customerId));
+        if (index == -1)
+        {
+            throw new UnknownCustomerException(Integer.parseInt(customerId));
+        }
+        Customer customer = customers.get(index);
+
+        // Get product
+        if (Integer.parseInt(productId) >= this.productId || Integer.parseInt(productId) <= 699){
+            throw new UnknownProductException(Integer.parseInt(productId));
+        }
+
+        Product product = products.get(productId);
+        
+        product.decreaseRating(product.checkPastRating(customer));
+        product.removeRating(product.checkPastRating(customer), customer);
+
+        System.out.println("Rating removed.");
+    }
+
+    public void printRatings(String productId){
+
+        // Get product
+        if (Integer.parseInt(productId) >= this.productId || Integer.parseInt(productId) <= 699){
+            throw new UnknownProductException(Integer.parseInt(productId));
+        }
+
+        Product product = products.get(productId);
+
+        product.printRatings();
+    }
+    
     /*
      * Sort products by price
      */
@@ -714,6 +875,7 @@ public class ECommerceSystem
     }
 }
 
+// Customer doesn't exist exception
 class UnknownCustomerException extends  RuntimeException {
     public UnknownCustomerException(int id){
         super ("Customer " + id + " not found.");
@@ -724,6 +886,7 @@ class UnknownCustomerException extends  RuntimeException {
     }
 }
 
+// Product doesn't exist exception
 class UnknownProductException extends  RuntimeException {
     public UnknownProductException(int id){
         super ("Product " + id + " not found.");
@@ -734,6 +897,7 @@ class UnknownProductException extends  RuntimeException {
     }
 }
 
+// Invalid product option exception
 class InvalidOptionException extends  RuntimeException {
     public InvalidOptionException(int id){
         super ("Product " + id + " not found.");
@@ -744,6 +908,7 @@ class InvalidOptionException extends  RuntimeException {
     }
 }
 
+// Invalid order type exception
 class InvalidOrderTypeException extends RuntimeException {
     public InvalidOrderTypeException(int id, String Type){
         super ("Product " + id + " is not a " + Type);
@@ -754,38 +919,48 @@ class InvalidOrderTypeException extends RuntimeException {
     }
 }
 
+// Out of stock exception
 class OutOfStockException extends RuntimeException {
     public OutOfStockException (String message){
         super (message);
     }
 }
 
+// Invalid customer address exception
 class InvalidCustomerAddress extends RuntimeException {
     public InvalidCustomerAddress (String address){
         super ("Invalid customer address: " + address + " .");
     }
 }
 
+// Invalid customer name exception
 class InvalidCustomerName extends RuntimeException {
     public InvalidCustomerName (String name){
         super ("Invalid customer name: " + name + " .");
     }
 }
 
+// Invalid order number exception
 class InvalidOrderNumber extends RuntimeException {
     public InvalidOrderNumber (String number){
         super ("Order number: " + number + " Not Found.");
     }
 }
 
+// Invalid author name exception
 class InvalidAuthorName extends RuntimeException {
     public InvalidAuthorName (String name){
         super ("Author " + name + " not found.");
     }
 }
 
+// Category name invalid exception
 class CategoryNameInvalid extends RuntimeException {
     public CategoryNameInvalid (String category){
         super("Invalid Category Name: " + category);
     }
+}
+
+class InvalidRatingException extends RuntimeException {
+    public InvalidRatingException (int rating) { super("Invalid product rating: " + rating);}
 }

@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.*;
 
 // Simulation of a Simple E-Commerce System (like Amazon)
 
@@ -91,7 +92,7 @@ public class ECommerceUserInterface
 					// Order the product. Check for valid orderNumber string return and for error message set in ECommerceSystem
 					// Print Order Number string returned from method in ECommerceSystem
 					String order = amazon.orderProduct(productId, customerId, "");
-					System.out.println(order);
+					if (!order.equals(null)){System.out.println(order);}
 
 				} else if (action.equalsIgnoreCase("ORDERBOOK")) // order a book for a customer, provide a format (Paperback, Hardcover or EBook)
 				{
@@ -176,7 +177,7 @@ public class ECommerceUserInterface
 
 					amazon.sortByAuthor(Author);
 				} else if (action.equalsIgnoreCase("COMMANDS")) {
-					System.out.println("BOOKSBYAUTHOR, GETSTOCK, SORTCUSTS, PRINTBYNAME, PRINTBYPRICE, CANCEL, ORDERSHOES, ORDERBOOK, ORDER, SHIP, NEWCUST, SHIPPED, ORDERS, CUSTS, BOOKS, PRODS, QUIT");
+					System.out.println("BOOKSBYAUTHOR, GETSTOCK, SORTCUSTS, PRINTBYNAME, PRINTBYPRICE, CANCEL, ORDERSHOES, ORDERBOOK, ORDER, SHIP, NEWCUST, SHIPPED, ORDERS, CUSTS, BOOKS, PRODS, QUIT, ADDTOCART, REMCARTITEM, PRINTCART, ORDERITEMS, STATS, RATE");
 				} else if (action.equalsIgnoreCase("ADDTOCART")) {
 					String productId = "";
 					String customerId = "";
@@ -218,12 +219,61 @@ public class ECommerceUserInterface
 					customerId = scanner.nextLine();
 
 					amazon.orderItems(customerId);
+				} else if (action.equalsIgnoreCase("RATE")) {
+					String customerId = "";
+					String productId = "";
+					int rating = 0;
+
+					System.out.print("Customer ID: ");
+					customerId = scanner.nextLine();
+
+					System.out.print("Product ID: ");
+					productId = scanner.nextLine();
+
+					System.out.print("Rating: ");
+					rating = scanner.nextInt();
+
+					scanner.nextLine();
+
+					amazon.rate(customerId, productId, rating);
+				} else if (action.equalsIgnoreCase("PRINTRATINGS")) {
+					String productId = "";
+
+					System.out.print("Product ID: ");
+					productId = scanner.nextLine();
+
+					amazon.printRatings(productId);
+				} else if (action.equalsIgnoreCase("REMOVERATING")) {
+					String customerId = "";
+					String productId = "";
+
+					System.out.print("Customer ID: ");
+					customerId = scanner.nextLine();
+
+					System.out.print("Product ID: ");
+					productId = scanner.nextLine();
+
+					amazon.removeRating(customerId, productId);
+				} else if (action.equalsIgnoreCase("SORTBYRATING")){
+					String Category = "";
+					int rating = 0;
+
+					System.out.print("Category: ");
+					Category = scanner.nextLine();
+
+					System.out.print("Only show ratings above: ");
+					rating = scanner.nextInt();
+
+					scanner.nextLine();
+
+					amazon.sortByRating(Category, rating);
 				} else if (action.equalsIgnoreCase("STATS")){
 					amazon.statistics();
 				}
+
 				System.out.print("\n>");
-			} catch (UnknownCustomerException | UnknownProductException | InvalidOptionException | InvalidOrderTypeException | OutOfStockException | InvalidCustomerAddress | InvalidCustomerName | InvalidOrderNumber | InvalidAuthorName exception){
-				System.out.print(exception.toString());
+			} catch (UnknownCustomerException | UnknownProductException | InvalidOptionException | CategoryNameInvalid | InvalidOrderTypeException | NumberFormatException | InvalidRatingException | OutOfStockException | InvalidCustomerAddress | InvalidCustomerName | InvalidOrderNumber | InvalidAuthorName | InputMismatchException exception){
+				System.out.println(exception.toString());
 
 				System.out.print("\n>");
 			}
