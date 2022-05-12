@@ -97,18 +97,30 @@ public class Customer
 		System.out.printf("\nName: %-20s ID: %3s Address: %-35s", name, id, shippingAddress);
 	}
 
+	/*
+	 * add item to cart
+	 */
 	public void addItem(Product product, String productOptions){
 		shoppingCart.addItem(product, productOptions);
 	}
 
+	/*
+	 * return cart object
+	 */
 	public ArrayList<CartItem> getCart(){
 		return shoppingCart.getItems();
 	}
 
+	/*
+	 * print cart
+	 */
 	public void printCart(){
 		shoppingCart.printCart();
 	}
 
+	/*
+	 * remove item from cart
+	 */
 	public void removeItem(CartItem item){
 		shoppingCart.removeItem(item);
 	}

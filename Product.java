@@ -330,7 +330,7 @@ public class Product implements Comparable<Product>
 
 	public void print()
 	{
-		System.out.printf("\nId: %-5s Category: %-9s Name: %-20s Price: %7.1f Rating: %7.1f", id, category, name, price, returnRating());
+		System.out.printf("\nId: %-5s Category: %-9s Name: %-20s Price: %7.1f Rating: %3.1f Total Ratings: %-2d", id, category, name, price, returnRating(), people.size());
 	}
 
 	/*

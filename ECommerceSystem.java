@@ -69,45 +69,86 @@ public class ECommerceSystem
         return "" + productId++;
     }
 
+    /*
+     * Reads file, creates product classes, puts it in product map
+     */
     private void readFile (){
         try {
             Scanner scanner = new Scanner(new File("products.txt")).useDelimiter("\n");
 
+            // Check to see if there is a next line avaliable in the file
             while (scanner.hasNext()) {
+
                 String line = (scanner.nextLine());
                 String productId = generateProductId();
+
+                // Check to see if line is equal to books
                 if (line.equals("BOOKS")){
+
                     try {
+
+                        // 2nd line is name
                         String name = scanner.nextLine();
+
+                        // 3rd line is price
                         double price = Double.parseDouble(scanner.nextLine());
+
+                        // 4th line takes line and splits it into stock
                         String[] stock = scanner.nextLine().split(" ");
+
+                        // takes the last line, splits it into product options, etc
                         String[] last_options = scanner.nextLine().split(":");
                         
                         products.put(productId, new Book (name, productId, price, Integer.parseInt(stock[0]), Integer.parseInt(stock[1]), last_options[0], last_options[1], Integer.parseInt(last_options[2])));
+
                     } catch (NumberFormatException | ArrayIndexOutOfBoundsException exception) {
                         System.out.println(exception.toString());
                         System.exit(1);
                     }
+
                 } else {
+
+                    // Category is not BOOK
                     try {
+
+                        // 2nd line is name
                         String name = scanner.nextLine();
+
+                        // 3rd line is price
                         double price = Double.parseDouble(scanner.nextLine());
+
+                        // 4th line is stock
                         int stock = Integer.parseInt(scanner.nextLine());
+
                         scanner.nextLine();
+
                         if (line.equals("COMPUTERS")) {
+
                             products.put(productId, new Product(name, productId, price, stock, Product.Category.COMPUTERS));
+
                         } else if (line.equals("FURNITURE")) {
+
                             products.put(productId, new Product(name, productId, price, stock, Product.Category.FURNITURE));
+
                         } else if (line.equals("CLOTHING")) {
+
                             products.put(productId, new Product(name, productId, price, stock, Product.Category.CLOTHING));
+
                         } else if (line.equals("GENERAL")) {
+
                             products.put(productId, new Product(name, productId, price, stock, Product.Category.GENERAL));
+
                         } else {
+
                             throw new CategoryNameInvalid(line);
+
                         }
+
                     } catch (NumberFormatException | ArrayIndexOutOfBoundsException exception) {
+
                         System.out.println(exception.toString());
                         System.exit(1);
+
                     }
                 }
             }
@@ -704,9 +745,9 @@ public class ECommerceSystem
                 }
             }
         }
-
+        
         if (categoryProds.size() == 0){
-            throw new CategoryNameInvalid(Category);
+            throw new NoProductWithRatingException(Category, rating);
         }
 
         // Sort arraylist by ratings
@@ -961,6 +1002,12 @@ class CategoryNameInvalid extends RuntimeException {
     }
 }
 
+// Invalid rating exception
 class InvalidRatingException extends RuntimeException {
     public InvalidRatingException (int rating) { super("Invalid product rating: " + rating);}
+}
+
+// No product with over rating exception
+class NoProductWithRatingException extends RuntimeException {
+    public NoProductWithRatingException (String product, int rating) { super ("There are no products of category " + product + " with rating over " + rating + " stars.");}
 }

@@ -272,7 +272,7 @@ public class ECommerceUserInterface
 				}
 
 				System.out.print("\n>");
-			} catch (UnknownCustomerException | UnknownProductException | InvalidOptionException | CategoryNameInvalid | InvalidOrderTypeException | NumberFormatException | InvalidRatingException | OutOfStockException | InvalidCustomerAddress | InvalidCustomerName | InvalidOrderNumber | InvalidAuthorName | InputMismatchException exception){
+			} catch (UnknownCustomerException | NoProductWithRatingException | UnknownProductException | InvalidOptionException | CategoryNameInvalid | InvalidOrderTypeException | NumberFormatException | InvalidRatingException | OutOfStockException | InvalidCustomerAddress | InvalidCustomerName | InvalidOrderNumber | InvalidAuthorName | InputMismatchException exception){
 				System.out.println(exception.toString());
 
 				System.out.print("\n>");
